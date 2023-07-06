@@ -3,6 +3,8 @@
 	-Object jsonConverter(boolean toJson, Object obj, String json)
 	-Object convertCurrency("0.500","bigdecimal",2)
 	-boolean checkStrDateFormat(String date, String pattern)
+	-<T> List<T> callAsAsync(Object obj, Object service, String methodName, int thread)
+	-String callSoapService(String soapRequest, String endpoint)
 */
 	
 	
