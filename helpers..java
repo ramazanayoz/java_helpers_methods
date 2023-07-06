@@ -407,7 +407,27 @@ public class Helpers{
 	*convertDateTimeFormat(new java.sql.Date(2012,9,8), String.class, null,"dd.MM.yyyy","istanbul") --> "08.09.2012";
 	*convertDateTimeFormat(java.time.OffsetDateTime.of(2012,9,8,7,6,5,4, ZoneOffset.ofHours(2)), String.class, null,"dd.MM.yyyy'T'HH:mm","istanbul") -->"08.09.2012T07:06";
 	*/
-	public static Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName) {
+    public static Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName) {
+        var getTimeInDefaultFormat = new Object(){
+            private String getTimeInDefaultFormat(String time) {
+                String[] splitTime = time.split(":");
+                if (time == null) {
+                    return "T00:00:00.000000000";
+                } else if (splitTime.length == 1) {
+                    return "T" + StringUtils.leftPad(splitTime[0], 2, "0") + ":00:00.000000000";
+                } else if (splitTime.length == 2) {
+                    return "T" + StringUtils.leftPad(splitTime[0], 2, "0") + ":" + StringUtils.leftPad(splitTime[1], 2, "0") + ":00.000000000";
+                } else if (splitTime.length == 3) {
+                    if (time.split("\\.").length > 1) {
+                        return "T" + time;
+                    }
+                    return "T" + StringUtils.leftPad(splitTime[0], 2, "0") + ":" + StringUtils.leftPad(splitTime[1], 2, "0") + ":" + StringUtils.leftPad(splitTime[2], 2, "0") + ".000000000";
+                } else {
+                    return "T" + time;
+                }
+            }
+        };
+        
         Object resultDate = null;
         String finalZoneName;
         ZoneId zoneId = ZoneId.systemDefault();
@@ -466,7 +486,7 @@ public class Helpers{
                 if (date.toString().trim().split("T").length > 1) {
                     finalTime = date.toString().trim().split("T")[1];
                     if (dateClass.equalsIgnoreCase("java.lang.String")) {
-                        finalTime = getTimeInDefaultFormat(finalTime).split("\\+")[0];
+                        finalTime = getTimeInDefaultFormat.getTimeInDefaultFormat(finalTime).split("\\+")[0];
                     } else {
                         finalTime = "T" + finalTime.split("\\+")[0];
                     }
@@ -487,8 +507,6 @@ public class Helpers{
                 stringFormat = formatter.format((TemporalAccessor) localDateFormat);
             }
 
-            /////////////////////////////////
-            ////////////////////////////////77
             ///////////////////////////////
             //return part
             if (returnTypeClass.contains("java.lang.String")) {
