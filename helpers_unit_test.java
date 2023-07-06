@@ -47,4 +47,13 @@ public class HelpersUnitTest {
         Assert.assertTrue(checkStrDateFormat("2028.12.12","yyyy.MM.dd"));
 		Assert.assertTrue(checkStrDateFormat("22-12-2028","dd-MM-yyyy"));
     }
+	
+	@Test
+    public void isIncludeInArrTEST(){
+        Assert.assertTrue(Helpers.isIncludeInArr(new String[]{"a","b","c"},true,new String[]{"a","b","c"},true,true));
+        Assert.assertTrue(Helpers.isIncludeInArr(new String[]{"a","b","c"},true,new String[]{"c","b","a"},false,false));
+        Assert.assertTrue(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"a","b","c","d"},true,true));
+        Assert.assertTrue(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"b","a","c","d"},false,true));
+        Assert.assertFalse(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"B","a","c","d"},false,true));
+    }
 }

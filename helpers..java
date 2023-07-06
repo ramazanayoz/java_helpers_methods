@@ -5,6 +5,7 @@
 	-boolean checkStrDateFormat(String date, String pattern)
 	-<T> List<T> callAsAsync(Object obj, Object service, String methodName, int thread)
 	-String callSoapService(String soapRequest, String endpoint)
+	-boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive)
 */
 	
 	
@@ -311,5 +312,82 @@ public class Helpers{
         }
     }
 	
+	
+	/*
+	*
+	*
+	*
+	*
+	*
+	*
+	*isIncludeInArr(new String[]{"a","b","c"},true,new String[]{"a","b","c"},true,true)); --> true
+	*isIncludeInArr(new String[]{"a","b","c"},true,new String[]{"c","b","a"},false,false)); --> true
+	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"a","b","c","d"},true,true)); --> true
+	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"b","a","c","d"},false,true)); --> true
+	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"B","a","c","d"},false,true)); --> false
+	*
+	*/
+	public static boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive) {
+        try {
+            List<String> valueList = Arrays.asList(values);
+            List<String> searchedList = Arrays.asList(searched);
+
+            if (isAraySizeEqual == null) {
+                isAraySizeEqual = false;
+            }
+            if (inSameOrder == null) {
+                inSameOrder = false;
+            }
+            if (isCaseSensetive == null) {
+                isCaseSensetive = true;
+            }
+            if (isCaseSensetive == false) {
+                valueList.replaceAll(String::toLowerCase);
+                searchedList.replaceAll(String::toLowerCase);
+            }
+
+            if (!isAraySizeEqual && !inSameOrder) {
+                for (int i = 0; i < valueList.size(); i++) {
+                    if (!searchedList.contains(valueList.get(i).trim())) {
+                        return false;
+                    }
+                }
+                return true;
+            } else if (!isAraySizeEqual && inSameOrder) {
+                for (int i = 0; i < valueList.size(); i++) {
+                    if (!valueList.get(i).trim().equals(searchedList.get(i).trim())) {
+                        return false;
+                    }
+                }
+                return true;
+            } else if (isAraySizeEqual && inSameOrder) {
+                if (!(valueList.size() == searchedList.size())) {
+                    return false;
+                }
+                for (int i = 0; i < valueList.size(); i++) {
+                    if (!valueList.get(i).trim().equals(searchedList.get(i).trim())) {
+                        return false;
+                    }
+                    ;
+                }
+                return true;
+            } else if (isAraySizeEqual && !inSameOrder) {
+                if (!(valueList.size() == searchedList.size())) {
+                    return false;
+                }
+                for (int i = 0; i < valueList.size(); i++) {
+                    if (!searchedList.contains(valueList.get(i).trim())) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
+    }
+
 }
 
