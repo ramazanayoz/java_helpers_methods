@@ -226,9 +226,34 @@ public class Helpers{
 	*
 	*callSoapService("<?xml version=\"1.0\"?> <soap:Envelope...","https://soapEndpoint.com")
 	*/
-	public static String callSoapService(String soapRequest, String endpoint) {
+    public static String callSoapService(String soapRequest, String endpoint) {
         try {
-            String securityTag = getSecuritySoapTag();
+            var getSecuritySoapTag = new Object() {
+                private String getSecuritySoapTag() {
+                    String securitySoapTag = null;
+                    MessageFactory messageFactory = null;
+                    try {
+                        messageFactory = MessageFactory.newInstance();
+                        SOAPMessage soapMessage = messageFactory.createMessage();
+                        soapMessage.getSOAPHeader().addChildElement(SOAPHeaderHandler.createSecurityHeader());
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        soapMessage.writeTo(bos);
+                        String soapMessageStr = new String(bos.toByteArray());
+                        Pattern pattern = Pattern.compile("<wsse:Security(.*?)</wsse:Security>", Pattern.CASE_INSENSITIVE);
+                        Matcher matcher = pattern.matcher(soapMessageStr);
+                        if (matcher.find()) {
+                            securitySoapTag = matcher.group().toString();
+                        }
+                        SOAPHeaderHandler.createSecurityHeader();
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    return securitySoapTag;
+
+                }
+            };
+
+            String securityTag = getSecuritySoapTag.getSecuritySoapTag(); //optional
             String headerTag = "<s:Header>";
             soapRequest = soapRequest.replaceAll("<\\?xml.+?>", "");
             String headerTagEnd = "</s:Header>";
