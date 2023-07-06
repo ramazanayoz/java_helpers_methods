@@ -6,6 +6,7 @@
 	-<T> List<T> callAsAsync(Object obj, Object service, String methodName, int thread)
 	-String callSoapService(String soapRequest, String endpoint)
 	-boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive)
+	-Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName)
 */
 	
 	
@@ -317,9 +318,6 @@ public class Helpers{
 	*
 	*
 	*
-	*
-	*
-	*
 	*isIncludeInArr(new String[]{"a","b","c"},true,new String[]{"a","b","c"},true,true)); --> true
 	*isIncludeInArr(new String[]{"a","b","c"},true,new String[]{"c","b","a"},false,false)); --> true
 	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"a","b","c","d"},true,true)); --> true
@@ -388,6 +386,139 @@ public class Helpers{
         }
         return false;
     }
+	
+	
+	/*
+	*
+	*
+	*
+	*
+	*if date null, default date is current
+    *return pattern is only for string return type
+	*
+	*convertDateTimeFormat(null,java.util.Date.class,null,null,"istanbul"));	//current date as Date obj
+	*convertDateTimeFormat(null, java.time.LocalDateTime.class, null,null,"istanbul")); //current date as LocalDate obj
+	*convertDateTimeFormat(null, String.class, null,"dd.MM.yyyy","istanbul"));	//current time as String in specific format
+	*
+	*convertDateTimeFormat("08.09.2012T07:06", java.time.LocalDateTime.class, true,null,"istanbul") --> java.time.LocalDateTime.of(2012,9,8,7,6,0,0);
+	*
+	*convertDateTimeFormat(new java.util.Date(2023,9,8,7,6,5), String.class, null,"dd.MM.yyyy","istanbul") --> "08.09.2023";
+	*convertDateTimeFormat(new java.util.GregorianCalendar(2023, 9,8,7,6,5), String.class, null,"dd.MM.yyyy","istanbul") --> "08.09.2023";
+	*convertDateTimeFormat(new java.sql.Date(2012,9,8), String.class, null,"dd.MM.yyyy","istanbul") --> "08.09.2012";
+	*convertDateTimeFormat(java.time.OffsetDateTime.of(2012,9,8,7,6,5,4, ZoneOffset.ofHours(2)), String.class, null,"dd.MM.yyyy'T'HH:mm","istanbul") -->"08.09.2012T07:06";
+	*/
+	public static Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName) {
+        Object resultDate = null;
+        String finalZoneName;
+        ZoneId zoneId = ZoneId.systemDefault();
+        DateTimeFormatter formatter;
+        String stringFormat;
+        Object localDateFormat;
+        String finalDate;
+        String finalTime = null;
 
+        if (zoneName != null && zoneName.contains("*")) {
+            finalZoneName = ZoneOffset.getAvailableZoneIds()
+                    .parallelStream().limit(1)
+                    .filter(x -> x.toLowerCase().trim().contains(zoneName.trim().replaceAll("\\*", "").toLowerCase()))
+                    .findFirst()
+                    .orElse(ZoneId.systemDefault().getId());
+            zoneId = ZoneId.of(finalZoneName);
+        }
+        try {
+            if (date == null) {
+                date = Instant.now().atZone(ZoneId.of("Europe/Istanbul"));
+            }
+
+            String dateClass = date.getClass().toString().replace("class ", "");
+            String returnTypeClass = returnType.toString().replaceAll("class", "").trim();
+
+            if (dateClass.equals("java.util.GregorianCalendar")) {
+                String year = ((java.util.GregorianCalendar) date).toZonedDateTime().getYear() + "";
+                String month = ((java.util.GregorianCalendar) date).getTime().getMonth() + "";
+                String day = ((java.util.GregorianCalendar) date).getTime().getDate() + "";
+                String hours = ((java.util.GregorianCalendar) date).getTime().getHours() + "";
+                String minutes = ((java.util.GregorianCalendar) date).getTime().getMinutes() + "";
+                String seconds = ((java.util.GregorianCalendar) date).getTime().getSeconds() + "";
+                finalDate = year + "-" + StringUtils.leftPad(month, 2, "0") + "-" + StringUtils.leftPad(day, 2, "0");
+                finalTime = "T" + StringUtils.leftPad(hours, 2, "0") + ":" + StringUtils.leftPad(minutes, 2, "0") + ":" + StringUtils.leftPad(seconds, 2, "0") + ".00";
+            } else if (dateClass.equals("java.sql.Date")) {
+                String year = ((java.sql.Date) date).getYear() + "";
+                String month = ((java.sql.Date) date).getMonth() + "";
+                String day = ((java.sql.Date) date).getDate() + "";
+                finalDate = year + "-" + StringUtils.leftPad(month, 2, "0") + "-" + StringUtils.leftPad(day, 2, "0");
+            } else if (dateClass.equals("java.util.Date")) {
+                String year = ((java.util.Date) date).getYear() + "";
+                if (Integer.valueOf(year) < 1000) {
+                    year = ((java.util.Date) date).toString().substring(((java.util.Date) date).toString().lastIndexOf(' ') + 1) + "";
+                }
+                String month = ((java.util.Date) date).getMonth() + "";
+                String day = ((java.util.Date) date).getDate() + "";
+                String hours = ((java.util.Date) date).getHours() + "";
+                String minutes = ((java.util.Date) date).getMinutes() + "";
+                String seconds = ((java.util.Date) date).getSeconds() + "";
+                finalDate = year + "-" + StringUtils.leftPad(month, 2, "0") + "-" + StringUtils.leftPad(day, 2, "0");
+                finalTime = "T" + StringUtils.leftPad(hours, 2, "0") + ":" + StringUtils.leftPad(minutes, 2, "0") + ":" + StringUtils.leftPad(seconds, 2, "0") + ".00";
+            } else {
+                //converting to localDateFormat format part
+                String trimmedDate = date.toString().trim().split("T")[0];
+                finalDate = getDateInDefaultFormat(trimmedDate, isYearEnd);
+                if (date.toString().trim().split("T").length > 1) {
+                    finalTime = date.toString().trim().split("T")[1];
+                    if (dateClass.equalsIgnoreCase("java.lang.String")) {
+                        finalTime = getTimeInDefaultFormat(finalTime).split("\\+")[0];
+                    } else {
+                        finalTime = "T" + finalTime.split("\\+")[0];
+                    }
+                } else {
+                    finalTime = "T00:00:00.00";
+                }
+            }
+            if (finalTime == null) {
+                finalTime = "T00:00:00.00";
+            }
+            if (returnPattern == null) {
+                stringFormat = finalDate + finalTime;
+            } else {
+                localDateFormat = LocalDateTime.parse(finalDate + finalTime);
+
+                //localDateFormat convert to string
+                formatter = DateTimeFormatter.ofPattern(returnPattern).withZone(zoneId);
+                stringFormat = formatter.format((TemporalAccessor) localDateFormat);
+            }
+
+            /////////////////////////////////
+            ////////////////////////////////77
+            ///////////////////////////////
+            //return part
+            if (returnTypeClass.contains("java.lang.String")) {
+                resultDate = stringFormat;
+            } else if (returnTypeClass.contains("java.time.Instant")) {
+            } else if (returnTypeClass.contains("java.time.OffsetDateTime")) {
+                resultDate = OffsetDateTime.parse(stringFormat);
+            } else if (returnTypeClass.equals("java.time.ZonedDateTime")) {
+            } else if (returnTypeClass.contains("java.time.LocalDateTime")) {
+                resultDate = java.time.LocalDateTime.parse(stringFormat);
+            } else if (returnTypeClass.equals("java.time.LocalDate")) {
+                resultDate = java.time.LocalDate.parse(finalDate);
+            } else if (returnTypeClass.equals("java.time.LocalTime")) {
+            } else if (returnTypeClass.equals("java.time.OffsetTime")) {
+            } else if (returnTypeClass.equals("java.util.Date")) {
+                DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                resultDate = df.parse(stringFormat);
+            } else if (returnTypeClass.equals("java.util.GregorianCalendar")) {
+            } else if (returnTypeClass.equals("javax.xml.datatype.XMLGregorianCalendar")) {
+                resultDate = DatatypeFactory.newInstance().newXMLGregorianCalendar(finalDate);
+            } else if (returnTypeClass.equals("java.sql.Date")) {
+            } else if (returnTypeClass.equals("java.sql.Time")) {
+            } else if (returnTypeClass.equals("java.sql.Timestamp")) {
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            return resultDate;
+        }
+    }
 }
 

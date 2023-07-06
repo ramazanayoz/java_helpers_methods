@@ -56,4 +56,21 @@ public class HelpersUnitTest {
         Assert.assertTrue(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"b","a","c","d"},false,true));
         Assert.assertFalse(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"B","a","c","d"},false,true));
     }
+	
+	@Test
+    public void convertDateTimeFormatTest(){
+        //if date null, default date is current
+        //return pattern is only for string return type
+        Assert.assertNotNull(Helpers.convertDateTimeFormat(null,Date.class,null,null,"istanbul"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(new java.util.Date(2023,9,8,7,6,5), String.class, null,"dd.MM.yyyy","istanbul").equals("08.09.2023"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(java.time.LocalDateTime.of(2012,9,8,7,6,5,4), String.class, null,"yyyy.MM.dd'T'HH:mm:ss","istanbul").equals("2012.09.08T07:06:05"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(java.time.OffsetDateTime.of(2012,9,8,7,6,5,4, ZoneOffset.ofHours(2)), String.class, null,"dd.MM.yyyy'T'HH:mm","istanbul").equals("08.09.2012T07:06"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat("08.09.2012T07:06", java.time.LocalDateTime.class, true,null,"istanbul*").equals(java.time.LocalDateTime.of(2012,9,8,7,6,0,0)));
+        Assert.assertNotNull(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(null,Date.class,null,null,"istanbul"));
+        Assert.assertNotNull(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(null, java.time.LocalDateTime.class, null,null,"istanbul"));
+        Assert.assertNotNull(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(null, String.class, null,"dd.MM.yyyy","istanbul"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(java.time.LocalDate.of(2012,9,8), String.class, null,"dd.MM.yyyy","istanbul").equals("08.09.2012"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(new java.util.GregorianCalendar(2023, 9,8,7,6,5), String.class, null,"dd.MM.yyyy","istanbul*").equals("08.09.2023"));
+        Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(new java.sql.Date(2012,9,8), String.class, null,"dd.MM.yyyy","istanbul").equals("08.09.2012"));
+    }
 }
