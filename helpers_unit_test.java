@@ -1,4 +1,3 @@
-
 public class HelpersUnitTest {
 	
 	@Test
@@ -41,7 +40,6 @@ public class HelpersUnitTest {
         Assert.assertTrue(Helpers.convertCurrency(",","bigdecimal",2) == null);
     }
 	
-	
 	@Test
     public void checkStrDateFormatTEST(){
         Assert.assertTrue(checkStrDateFormat("2028.12.12","yyyy.MM.dd"));
@@ -72,5 +70,13 @@ public class HelpersUnitTest {
         Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(java.time.LocalDate.of(2012,9,8), String.class, null,"dd.MM.yyyy","istanbul").equals("08.09.2012"));
         Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(new java.util.GregorianCalendar(2023, 9,8,7,6,5), String.class, null,"dd.MM.yyyy","istanbul*").equals("08.09.2023"));
         Assert.assertTrue(rally.services.mobileapproval.util.Helpers.convertDateTimeFormat(new java.sql.Date(2012,9,8), String.class, null,"dd.MM.yyyy","istanbul").equals("08.09.2012"));
+    }
+	
+	@Test
+    public void isCurrencyProvideLimitTest(){
+        Assert.assertTrue(Helpers.isCurrencyProvideLimit("20.123",2,"20.122","0"));
+        Assert.assertFalse(Helpers.isCurrencyProvideLimit("20.123",3,"20.122","0"));
+        Assert.assertTrue(Helpers.isCurrencyProvideLimit("20.123",0,"20.122","0"));
+        Assert.assertFalse(Helpers.isCurrencyProvideLimit("0.123",3,"20","0.122"));
     }
 }

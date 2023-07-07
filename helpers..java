@@ -1,21 +1,19 @@
 /*
-	*Methods
-	-Object jsonConverter(boolean toJson, Object obj, String json)
-	-Object convertCurrency("0.500","bigdecimal",2)
-	-boolean checkStrDateFormat(String date, String pattern)
-	-<T> List<T> callAsAsync(Object obj, Object service, String methodName, int thread)
-	-String callSoapService(String soapRequest, String endpoint)
-	-boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive)
-	-Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName)
+*Methods
+-Object jsonConverter(boolean toJson, Object obj, String json)
+-Object convertCurrency("0.500","bigdecimal",2)
+-boolean checkStrDateFormat(String date, String pattern)
+-<T> List<T> callAsAsync(Object obj, Object service, String methodName, int thread)
+-String callSoapService(String soapRequest, String endpoint)
+-boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive)
+-Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName)
+-boolean isCurrencyProvideLimit(String value, Integer scale, String bigLimit, String smallLimit)
 */
-	
-	
 	
 	
 public class Helpers{	
 	
 	/*
-	*
 	*
 	*
 	*
@@ -55,13 +53,11 @@ public class Helpers{
 	*
 	*
 	*
-	*
 	*convertCurrency("0.500","bigdecimal",2) -> new BigDecimal("0.50" ) 
 	*convertCurrency("20000,25","bigdecimal",2) -> new BigDecimal("20000.25" ) 
 	*convertCurrency("200.000.000,25","bigdecimal",2) -> new BigDecimal("200000000.25" ) 
 	*convertCurrency("20.000,15","bigdecimal",2) -> new BigDecimal("20000.15" ) 
 	*convertCurrency("200,000,000.25","bigdecimal",2) -> new BigDecimal("200000000.25" )
-	*
 	*
 	*convertCurrency(221681.48,"bigdecimal",null)-> new BigDecimal("221681.48" ) 
 	*convertCurrency(".1","double",2) -> new Double("0.10" ) 
@@ -133,7 +129,6 @@ public class Helpers{
 	*
 	*
 	*
-	*
 	*checkStrDateFormat("2028.12.12","yyyy.MM.dd") -> true
 	*checkStrDateFormat("22-12-2028","dd-MM-yyyy") -> true
 	*/
@@ -154,8 +149,6 @@ public class Helpers{
     }
 	
 	/*
-	*
-	*
 	*
 	*
 	*
@@ -219,10 +212,7 @@ public class Helpers{
         return responseDTO;
     }
 	
-	
 	/*
-	*
-	*
 	*
 	*
 	*
@@ -313,7 +303,6 @@ public class Helpers{
         }
     }
 	
-	
 	/*
 	*
 	*
@@ -323,7 +312,6 @@ public class Helpers{
 	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"a","b","c","d"},true,true)); --> true
 	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"b","a","c","d"},false,true)); --> true
 	*isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"B","a","c","d"},false,true)); --> false
-	*
 	*/
 	public static boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive) {
         try {
@@ -386,7 +374,6 @@ public class Helpers{
         }
         return false;
     }
-	
 	
 	/*
 	*
@@ -536,6 +523,45 @@ public class Helpers{
             return null;
         } finally {
             return resultDate;
+        }
+    }
+	
+	/*
+	*
+	*
+	*
+	*Helpers.isCurrencyProvideLimit("20.123",2,"20.122","0") //TRUE
+    *Helpers.isCurrencyProvideLimit("20.123",3,"20.122","0") //FALSE
+    *Helpers.isCurrencyProvideLimit("20.123",0,"20.122","0") //TRUE
+    *Helpers.isCurrencyProvideLimit("0.123",3,"20","0.122") //FALSE
+	*/
+	public static boolean isCurrencyProvideLimit(String value, Integer scale, String bigLimit, String smallLimit) {
+        try {
+            boolean result = true;
+            if (value == null || value.isEmpty()) {
+                return false;
+            }
+            if(scale == null){
+                scale = 2; //default
+            }
+            BigDecimal smallLimitDec = new BigDecimal(Double.parseDouble(smallLimit)).setScale(scale, RoundingMode.HALF_DOWN);
+            BigDecimal bigLimitDesc = new BigDecimal(Double.parseDouble(bigLimit)).setScale(scale, RoundingMode.HALF_DOWN);
+            BigDecimal valueDec = new BigDecimal(Double.parseDouble(value)).setScale(scale, RoundingMode.HALF_DOWN);
+            if(smallLimit != null) {
+                if (((BigDecimal) convertCurrency(valueDec.toString(), "bigdecimal", 2)).compareTo(smallLimitDec) >= 0) {
+                } else {
+                    return false;
+                }
+            }if(bigLimit != null){
+                if (((BigDecimal) convertCurrency(valueDec.toString(), "bigdecimal", 2)).compareTo(bigLimitDesc) >= 0) {
+                } else {
+                    return false;
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }
