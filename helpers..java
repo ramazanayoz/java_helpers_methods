@@ -1,17 +1,72 @@
 /*
 *Methods
 -Object jsonConverter(boolean toJson, Object obj, String json)
+
 -Object convertCurrency("0.500","bigdecimal",2)
+
 -boolean checkStrDateFormat(String date, String pattern)
+
 -<T> List<T> callAsAsync(Object obj, Object service, String methodName, int thread)
+
 -String callSoapService(String soapRequest, String endpoint)
+
 -boolean isIncludeInArr(String[] values, Boolean isAraySizeEqual, String[] searched, Boolean inSameOrder, Boolean isCaseSensetive)
+
 -Object convertDateTimeFormat(Object date, Object returnType, Boolean isYearEnd, String returnPattern, final String zoneName)
+
 -boolean isCurrencyProvideLimit(String value, Integer scale, String bigLimit, String smallLimit)
+
+
+T getCurrentDate(java.time.OffsetTime.class,"istanbul")
 */
 	
 	
 public class Helpers{	
+
+	/*
+	*
+	*
+	*
+	Helpers.getCurrentDate(java.time.OffsetTime.class,"istanbul")
+	*/
+	public static <T>  T getCurrentDate(Class returnClass, String zone){
+		String returnTypeClass = returnClass.getName();
+		Object currentDate = null;
+		ZoneId zoneId = null;
+		if(zone == null || zone.toLowerCase().contains("istanbul")){
+		    zoneId = ZoneId.of("Europe/Istanbul");
+		}else{
+		    zoneId = ZoneId.of(zone);
+		}
+		if (returnTypeClass.contains("java.time.Instant")) {
+		    currentDate = java.time.Instant.now();
+		} else if (returnTypeClass.contains("java.time.OffsetDateTime")) {
+		    currentDate = java.time.OffsetDateTime.now(zoneId);
+		} else if (returnTypeClass.equals("java.time.ZonedDateTime")) {
+		    currentDate = java.time.ZonedDateTime.now(zoneId);
+		} else if (returnTypeClass.contains("java.time.LocalDateTime")) {
+		    currentDate = java.time.LocalDateTime.now(zoneId);
+		} else if (returnTypeClass.equals("java.time.LocalDate")) {
+		    currentDate = java.time.LocalDate.now(zoneId);
+		} else if (returnTypeClass.equals("java.time.LocalTime")) {
+		    currentDate = java.time.LocalTime.now(zoneId);
+		} else if (returnTypeClass.equals("java.time.OffsetTime")) {
+		    currentDate =  java.time.OffsetTime.now(zoneId);
+		} else if (returnTypeClass.equals("java.util.Date")) {
+		   currentDate = java.util.Date.from(java.time.Instant.now());
+		} else if (returnTypeClass.equals("java.util.GregorianCalendar")) {
+		    currentDate = java.util.GregorianCalendar.getInstance(TimeZone.getTimeZone(zoneId));
+		} else if (returnTypeClass.equals("jakarta.xml.datatype.XMLGregorianCalendar")) {
+		    currentDate = javax.xml.datatype.DatatypeFactory.newDefaultInstance().newXMLGregorianCalendar(java.util.GregorianCalendar.from(ZonedDateTime.now(zoneId)));
+		} else if (returnTypeClass.equals("java.sql.Date")) {
+		    currentDate = java.sql.Date.from(java.time.Instant.now());
+		} else if (returnTypeClass.equals("java.sql.Time")) {
+		    currentDate = java.sql.Time.valueOf(java.time.LocalTime.now(zoneId));
+		} else if (returnTypeClass.equals("java.sql.Timestamp")) {
+		    currentDate = java.sql.Timestamp.from(java.time.Instant.now());
+		}
+		return (T) currentDate;
+	}
 	
 	/*
 	*
