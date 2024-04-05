@@ -54,6 +54,11 @@ public class HelpersUnitTest {
         Assert.assertTrue(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"b","a","c","d"},false,true));
         Assert.assertFalse(Helpers.isIncludeInArr(new String[]{"a","b","c"},false,new String[]{"B","a","c","d"},false,true));
     }
+
+	@Test
+    public void getCurrentDateTEST(){
+        Assert.assertNotNull(Helpers.getCurrentDate(java.time.OffsetTime.class,"istanbul"));
+    }
 	
 	@Test
     public void convertDateTimeFormatTest(){
